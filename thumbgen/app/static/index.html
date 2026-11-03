@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thumbnail Generator</title>
+<style>
+  :root{--bg:#0f1115;--panel:#171a21;--line:#262b36;--text:#e8eaf0;--muted:#8b93a7;--accent:#ff5c1a;--accent2:#1ad1ff;--ok:#3ddc84}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}
+  header h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.3px}
+  header .status{margin-left:auto;color:var(--muted);font-size:12px}
+  main{display:grid;grid-template-columns:380px 1fr;gap:0;min-height:calc(100vh - 49px)}
+  aside{border-right:1px solid var(--line);padding:16px;overflow:auto;max-height:calc(100vh - 49px)}
+  section.out{padding:16px;overflow:auto}
+  label{display:block;color:var(--muted);font-size:12px;margin:12px 0 4px;text-transform:uppercase;letter-spacing:.5px}
+  input,select,textarea{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit}
+  textarea{min-height:64px;resize:vertical}
+  .presets{display:grid;gap:6px}
+  .preset{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer}
+  .preset.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .preset b{display:block;font-size:13px}
+  .preset span{color:var(--muted);font-size:12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;background:none;border:0;color:var(--muted);padding:8px;cursor:pointer;font:inherit}
+  .seg button.active{background:var(--accent);color:#fff}
+  button.primary{width:100%;margin-top:16px;background:var(--accent);color:#fff;border:0;border-radius:10px;padding:12px;font:inherit;font-weight:700;cursor:pointer}
+  button.primary:disabled{opacity:.5;cursor:wait}
+  button.ghost{background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+  .prompt{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;color:#cbd2e1;margin-bottom:12px}
+  .prompt small{color:var(--muted);display:block;margin-top:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000}
+  .card .bar{display:flex;gap:8px;align-items:center;padding:8px 10px;color:var(--muted);font-size:12px}
+  .card .bar a{color:var(--accent2);text-decoration:none;margin-left:auto}
+  .tiny{display:flex;gap:6px;padding:0 10px 10px}
+  .tiny img{width:150px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+  .tiny span{color:var(--muted);font-size:11px;align-self:center}
+  .err{color:#ff7b7b;margin:8px 0}
+  @media (max-width:900px){main{grid-template-columns:1fr}aside{max-height:none;border-right:0;border-bottom:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header><h1>Roblox Thumbnail Generator</h1><span class="status" id="status">connecting…</span></header>
+<main>
+<aside>
+  <label>Composition preset</label>
+  <div class="presets" id="presets"></div>
+
+  <label>Style</label>
+  <div class="seg" id="style"><button data-v="3d" class="active">3D render</button><button data-v="anime">Anime</button></div>
+
+  <div class="row">
+    <div><label>Palette</label><select id="palette"></select></div>
+    <div><label>Text side (clean space)</label><select id="text_side"><option value="">preset default</option><option>left</option><option>right</option><option>center</option></select></div>
+  </div>
+
+  <label>Slots</label>
+  <div id="slots"></div>
+
+  <label>Extra prompt</label>
+  <textarea id="extra" placeholder="e.g. neon city at night, giant golden crown"></textarea>
+  <label>Extra negative</label>
+  <input id="extra_negative" placeholder="e.g. hats, glasses">
+
+  <div class="row3">
+    <div><label>Count</label><input id="count" type="number" min="1" max="12" value="4"></div>
+    <div><label>Seed</label><input id="seed" type="number" placeholder="random"></div>
+    <div><label>LoRA scale</label><input id="lora_scale" type="number" step="0.05" min="0" max="1.5" value="0.8"></div>
+  </div>
+  <div class="row3">
+    <div><label>Steps</label><input id="steps" type="number" min="8" max="60" value="28"></div>
+    <div><label>CFG</label><input id="cfg" type="number" step="0.5" min="1" max="15" value="6"></div>
+    <div><label>1080p pass</label><select id="upscale"><option value="false">off</option><option value="true">on</option></select></div>
+  </div>
+
+  <button class="primary" id="go">Generate</button>
+  <button class="ghost" id="preview" style="width:100%;margin-top:8px">Preview prompt only</button>
+  <div class="err" id="err"></div>
+</aside>
+
+<section class="out">
+  <div class="prompt" id="promptbox">Pick a preset to see the expanded prompt.</div>
+  <div class="grid" id="grid"></div>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+let catalog=null, preset=null, style='3d';
+async function j(url,opts){const r=await fetch(url,opts);if(!r.ok){throw new Error((await r.json()).detail||r.statusText)}return r.json()}
+
+async function init(){
+  catalog=await j('/api/presets');
+  const h=await j('/api/health');
+  $('#status').textContent=`base: ${h.base.split('/').pop()} · LoRA: ${h.lora?h.lora.split('/').pop():'none'}`;
+  const ps=$('#presets');
+  catalog.presets.forEach(p=>{const d=document.createElement('div');d.className='preset';d.dataset.id=p.id;
+    d.innerHTML=`<b>${p.label}</b><span>${p.description}</span>`;d.onclick=()=>selectPreset(p.id);ps.appendChild(d)});
+  const pal=$('#palette');pal.innerHTML='<option value="random">random</option>'+Object.keys(catalog.palettes).map(k=>`<option ${k==='orange_teal'?'selected':''}>${k}</option>`).join('');
+  selectPreset(catalog.presets[0].id);
+}
+function selectPreset(id){
+  preset=catalog.presets.find(p=>p.id===id);
+  document.querySelectorAll('.preset').forEach(e=>e.classList.toggle('active',e.dataset.id===id));
+  const s=$('#slots');s.innerHTML='';
+  Object.entries(preset.slots).forEach(([k,v])=>{
+    const w=document.createElement('div');
+    if(k==='expression'){w.innerHTML=`<label>${k}</label><select data-slot="${k}"><option value="random">random</option>${catalog.expressions.map(e=>`<option ${e===v?'selected':''}>${e}</option>`).join('')}</select>`}
+    else{w.innerHTML=`<label>${k}</label><input data-slot="${k}" value="${v.replace(/"/g,'&quot;')}">`}
+    s.appendChild(w)});
+  preview();
+}
+function body(){
+  const slots={};document.querySelectorAll('[data-slot]').forEach(e=>slots[e.dataset.slot]=e.value);
+  const seed=$('#seed').value;
+  return {preset:preset.id,style,palette:$('#palette').value,slots,text_side:$('#text_side').value||null,
+    extra:$('#extra').value,extra_negative:$('#extra_negative').value,seed:seed===''?null:+seed,
+    count:+$('#count').value,steps:+$('#steps').value,cfg:+$('#cfg').value,lora_scale:+$('#lora_scale').value,
+    upscale_1080p:$('#upscale').value==='true'};
+}
+async function preview(){
+  try{const r=await j('/api/prompt',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body())});
+    $('#promptbox').innerHTML=`${esc(r.positive)}<small>negative: ${esc(r.negative)}</small><small>text space: ${r.meta.text_side} · palette: ${r.meta.palette}</small>`;$('#err').textContent=''}
+  catch(e){$('#err').textContent=e.message}
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+async function generate(){
+  const b=$('#go');b.disabled=true;b.textContent='Generating…';$('#err').textContent='';
+  try{const r=await j('/api/generate',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body())});
+    $('#promptbox').innerHTML=`${esc(r.positive)}<small>negative: ${esc(r.negative)}</small>`;
+    const g=$('#grid');
+    r.results.slice().reverse().forEach(res=>{const c=document.createElement('div');c.className='card';
+      c.innerHTML=`<img src="${res.url}"><div class="bar"><span>seed ${res.seed}</span><span>${res.width}×${res.height}</span>
+        <button class="ghost" onclick="$('#seed').value=${res.seed}">reuse seed</button>
+        <a href="${res.url}" download>download</a></div>
+        <div class="tiny"><img src="${res.url}"><span>← how it reads at discovery-page size</span></div>`;
+      g.prepend(c)});
+  }catch(e){$('#err').textContent=e.message}
+  b.disabled=false;b.textContent='Generate';
+}
+$('#style').querySelectorAll('button').forEach(bt=>bt.onclick=()=>{style=bt.dataset.v;$('#style').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===bt));preview()});
+['#palette','#text_side','#extra','#extra_negative','#seed'].forEach(s=>$(s).addEventListener('change',preview));
+document.addEventListener('change',e=>{if(e.target.dataset.slot!==undefined)preview()});
+$('#go').onclick=generate;$('#preview').onclick=preview;
+init().catch(e=>$('#status').textContent='error: '+e.message);
+</script>
+</body>
+</html>

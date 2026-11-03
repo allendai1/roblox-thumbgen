@@ -1,0 +1,10 @@
+work/
+*.safetensors
+*.ckpt
+*.onnx
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+models/

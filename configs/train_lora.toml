@@ -1,0 +1,65 @@
+# kohya sd-scripts config for sdxl_train_network.py
+# Launch: accelerate launch --num_cpu_threads_per_process 4 sdxl_train_network.py --config_file configs/train_lora.toml
+# Paths assume the RunPod layout from train/setup_runpod.sh (/workspace).
+
+pretrained_model_name_or_path = "/workspace/models/sd_xl_base_1.0.safetensors"
+vae = "/workspace/models/sdxl_vae_fp16_fix.safetensors"
+train_data_dir = "/workspace/dataset"          # contains 10_rbxthumb/
+output_dir = "/workspace/output"
+output_name = "rbxthumb-v1"
+logging_dir = "/workspace/logs"
+save_model_as = "safetensors"
+
+# -- data --
+resolution = "1024,1024"
+enable_bucket = true
+min_bucket_reso = 512
+max_bucket_reso = 2048
+bucket_reso_steps = 64
+bucket_no_upscale = true
+caption_extension = ".txt"
+shuffle_caption = true
+keep_tokens = 3                 # protects "rbxthumb, <style>, <genre>"
+caption_dropout_rate = 0.05
+caption_tag_dropout_rate = 0.05
+max_token_length = 225
+cache_latents = true
+cache_latents_to_disk = true
+color_aug = false
+flip_aug = false                # thumbnails are directional (text side); don't flip
+
+# -- network --
+network_module = "networks.lora"
+network_dim = 32
+network_alpha = 16
+network_train_unet_only = false
+network_args = []
+
+# -- optimisation --
+unet_lr = 1e-4
+text_encoder_lr = 2e-5
+learning_rate = 1e-4
+optimizer_type = "AdamW8bit"
+lr_scheduler = "cosine"
+lr_warmup_steps = 150
+train_batch_size = 4
+gradient_accumulation_steps = 1
+gradient_checkpointing = true
+mixed_precision = "bf16"
+save_precision = "fp16"
+max_train_epochs = 1            # dataset folder already has 10 repeats
+min_snr_gamma = 5
+noise_offset = 0.0357
+sdpa = true
+no_half_vae = true
+max_data_loader_n_workers = 4
+persistent_data_loader_workers = true
+seed = 42
+
+# -- checkpoints & samples --
+save_every_n_steps = 500
+save_last_n_steps = 3000
+sample_every_n_steps = 500
+sample_prompts = "/workspace/sample_prompts.txt"
+sample_sampler = "dpm_2"
+log_with = "tensorboard"

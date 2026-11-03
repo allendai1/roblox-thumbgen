@@ -1,0 +1,56 @@
+# Dataset ingest configuration. Edit paths and column names to match your data.
+
+paths:
+  metadata: data/thumbnails.csv        # .csv, .json or .jsonl
+  image_dir: data/images               # directory containing the image files
+  output_dir: work/dataset             # kohya-ready output
+  # kohya reads "<repeats>_<name>" folders; 10 repeats x 1200 imgs x 1 epoch = 12k samples
+  repeats: 10
+  instance_name: rbxthumb
+
+columns:
+  filename: filename       # relative to image_dir (or absolute path)
+  tags: tags               # comma-separated, may be blank
+  game: game_name          # optional
+  genre: genre             # optional
+  style: style             # optional: "3d" or "anime"; blank -> auto-classified
+
+captions:
+  trigger: rbxthumb
+  style_phrases:
+    3d: "3d render"
+    anime: "anime style"
+  include_game_name: false     # game titles rarely help generalisation
+  include_genre: true
+  # autocaption models (set to null to disable)
+  wd14_model: SmilingWolf/wd-eva02-large-tagger-v3
+  wd14_threshold: 0.35
+  wd14_max_tags: 18
+  florence_model: microsoft/Florence-2-large
+  florence_task: "<MORE_DETAILED_CAPTION>"
+  max_caption_tokens: 225      # kohya max_token_length; CLIP chunks of 75
+
+style_classifier:
+  model: ViT-L-14
+  pretrained: laion2b_s32b_b82k
+  prompts:
+    3d:
+      - "a 3D rendered Roblox game thumbnail with blocky avatar characters"
+      - "a glossy 3D render of Roblox characters, video game thumbnail"
+    anime:
+      - "an anime style illustrated video game thumbnail"
+      - "a 2D anime drawing of characters, game cover art"
+
+upscale:
+  method: realesrgan       # realesrgan | lanczos | none
+  model_url: https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
+  scale: 2
+  # final target: fit inside the SDXL 16:9 bucket
+  target_width: 1344
+  target_height: 768
+  min_source_width: 384     # skip images smaller than this
+
+filters:
+  min_aspect: 1.5           # keep roughly 16:9 images (drop square icons)
+  max_aspect: 2.0
+  dedupe: true              # perceptual-hash dedupe

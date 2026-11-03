@@ -1,0 +1,148 @@
+# High-CTR Roblox thumbnail composition presets.
+#
+# Each preset expands into prompt fragments. Field meaning:
+#   subject   - what the viewer's eye lands on first (the LoRA supplies the "look")
+#   layout    - composition / camera language
+#   lighting  - lighting and colour language
+#   text_side - where YOU will put the title text; the prompt asks for negative space there
+#   negative  - extra negative-prompt terms
+#   weight    - how aggressively to emphasise the subject (used for prompt weighting)
+#
+# The global_* keys are prepended/appended to every preset.
+
+global_positive: >
+  roblox game thumbnail, eye-catching, vibrant saturated colors, high contrast,
+  sharp focus, dramatic rim lighting, clean readable composition, 16:9
+global_negative: >
+  text, letters, words, watermark, logo, signature, ui, hud, blurry, low quality,
+  jpeg artifacts, deformed, extra limbs, duplicate, cropped, cluttered, muddy colors,
+  washed out, grey, noise
+
+palettes:
+  orange_teal: "orange and teal complementary color scheme"
+  purple_yellow: "purple and yellow complementary color scheme"
+  red_cyan: "red and cyan complementary color scheme"
+  pink_blue: "hot pink and electric blue color scheme"
+  green_magenta: "lime green and magenta color scheme"
+  gold_black: "gold and black luxury color scheme"
+
+presets:
+  face_closeup:
+    label: "Face close-up (shock / excitement)"
+    description: "Single character fills ~50% of frame, exaggerated expression, eyes toward camera. The single strongest CTR pattern on the front page."
+    subject: "extreme close-up of a {character} with a {expression} expression, huge expressive eyes, mouth open, looking at viewer"
+    layout: "character on the {subject_side} side of the frame, empty uncluttered background on the {text_side} side, shallow depth of field, slight low angle"
+    lighting: "strong rim light outlining the character, glowing edge light, {palette}"
+    text_side: right
+    negative: "small character, distant, full body, multiple characters"
+    weight: 1.25
+    defaults: {character: "roblox avatar", expression: "shocked and excited"}
+
+  vs_faceoff:
+    label: "VS face-off"
+    description: "Two characters confronting each other across the frame; center kept clear for a VS badge."
+    subject: "two {character} facing each other in a confrontation, {left_char} on the left glaring at {right_char} on the right, intense expressions"
+    layout: "split composition, each character on their own half, dramatic empty center gap for a VS badge, symmetrical, medium close-up"
+    lighting: "left side lit {left_color}, right side lit {right_color}, dramatic rim lights, dark gradient background"
+    text_side: center
+    negative: "single character, crowd, overlapping characters"
+    weight: 1.15
+    defaults: {character: "roblox avatars", left_char: "a hero", right_char: "a villain", left_color: "blue", right_color: "red"}
+
+  loot_reveal:
+    label: "Loot / rare item reveal"
+    description: "A giant glowing item or pet is the hero; a small character reacts. Drives curiosity for simulators, tycoons, pet games."
+    subject: "a giant glowing {item} floating in the center, radiating light rays and sparkles, a small amazed {character} looking up at it"
+    layout: "item is the focal point and fills the center-{subject_side}, godrays, particles, negative space on the {text_side} side for a title"
+    lighting: "bright rainbow glow around the item, lens flare, {palette}, dark vignette edges"
+    text_side: left
+    negative: "dull item, small item, no glow"
+    weight: 1.2
+    defaults: {item: "legendary treasure chest", character: "roblox avatar"}
+
+  looming_threat:
+    label: "Looming threat (horror / survival)"
+    description: "Small player in foreground, huge monster behind. Scale contrast + fear expression."
+    subject: "a terrified {character} running toward the camera, a gigantic {monster} looming behind them in the shadows with glowing eyes"
+    layout: "strong scale contrast, character small in the lower {subject_side}, monster fills the upper background, dutch angle, wide lens"
+    lighting: "dark moody scene, single colored light source, {palette}, fog, volumetric light"
+    text_side: left
+    negative: "bright cheerful, daytime, cute monster"
+    weight: 1.15
+    defaults: {character: "roblox avatar", monster: "shadowy creature"}
+
+  chase_action:
+    label: "Chase / action burst"
+    description: "Motion toward the viewer with speed lines and debris; high energy for obbies, racing, battle games."
+    subject: "a {character} sprinting toward the camera mid-stride, {hazard} chasing close behind, dynamic pose"
+    layout: "diagonal composition, motion blur on the background, speed lines, debris flying, low angle, extreme perspective"
+    lighting: "explosive bright highlights, {palette}, dramatic contrast"
+    text_side: right
+    negative: "static pose, standing still, calm"
+    weight: 1.1
+    defaults: {character: "roblox avatar", hazard: "a wave of lava"}
+
+  before_after:
+    label: "Before / after transformation"
+    description: "Split frame: weak/small on the left, powerful/huge on the right. Progression hook for simulators."
+    subject: "left half: a tiny weak {character}; right half: the same character transformed into a {upgrade}, towering and powerful"
+    layout: "vertical split screen, clear dividing line in the middle, arrow-like visual flow from left to right, both characters facing the viewer"
+    lighting: "left side desaturated and dim, right side glowing and vibrant, {palette}"
+    text_side: center
+    negative: "single character, no contrast"
+    weight: 1.1
+    defaults: {character: "roblox avatar", upgrade: "giant golden armored version"}
+
+  update_hero:
+    label: "Update hero shot"
+    description: "One new feature/item/map rendered as a dramatic hero shot with a reaction character; leaves a corner for a NEW/UPDATE badge."
+    subject: "a dramatic hero shot of {feature}, with a {character} posing proudly next to it with a thumbs up and a huge grin"
+    layout: "feature centered and large, character on the {subject_side}, clean empty top-{text_side} corner for a badge, slight low angle"
+    lighting: "bright sunny high-key lighting, sparkles, {palette}, soft glow"
+    text_side: left
+    negative: "dark, gloomy"
+    weight: 1.1
+    defaults: {feature: "a brand new shiny vehicle", character: "roblox avatar"}
+
+  group_squad:
+    label: "Squad / social"
+    description: "3-4 characters posing together, each with a distinct silhouette and colour. Works for roleplay, tycoon, and social games."
+    subject: "a group of four {character}s posing together in a line, each with a different outfit and bright color, confident fun expressions"
+    layout: "characters fill the lower two thirds, staggered heights for silhouette variety, environment visible behind, negative space in the upper {text_side}"
+    lighting: "warm golden hour light, soft rim lights, {palette}"
+    text_side: right
+    negative: "identical characters, single character"
+    weight: 1.0
+    defaults: {character: "roblox avatar"}
+
+  pov_hands:
+    label: "POV / first-person reach"
+    description: "First-person hands reaching for an item or weapon. Immersive hook for shooters and horror."
+    subject: "first person view, {character} hands in the foreground holding {item}, reaching forward"
+    layout: "hands bottom of frame, point of interest in the middle distance, strong depth, wide angle"
+    lighting: "{palette}, dramatic light from the point of interest"
+    text_side: right
+    negative: "third person, full body"
+    weight: 1.0
+    defaults: {character: "roblox avatar", item: "a glowing sword"}
+
+  seasonal_event:
+    label: "Seasonal event"
+    description: "Standard hero composition dressed in a seasonal theme (Halloween, Christmas, summer)."
+    subject: "a {character} celebrating in a {season} themed world, {season} decorations and props, excited expression"
+    layout: "character on the {subject_side} third, themed environment filling the background, negative space on the {text_side}"
+    lighting: "festive glowing lights, {palette}, bokeh"
+    text_side: left
+    negative: "plain environment"
+    weight: 1.0
+    defaults: {character: "roblox avatar", season: "halloween"}
+
+expressions:
+  - shocked and excited
+  - terrified screaming
+  - evil grin
+  - smug confident
+  - crying
+  - laughing hysterically
+  - determined angry
+  - amazed wide-eyed
